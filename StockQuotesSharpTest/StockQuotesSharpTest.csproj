@@ -9,7 +9,7 @@
     <ProjectGuid>{20FF09B5-365B-4750-8DA3-34D7BD24C82D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>StockQuotesSharpTest</RootNamespace>
+    <RootNamespace>cosh.Stock</RootNamespace>
     <AssemblyName>StockQuotesSharpTest</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

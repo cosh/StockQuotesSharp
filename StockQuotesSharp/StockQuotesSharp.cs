@@ -9,6 +9,9 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Net;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO.Compression;
+using System.Runtime.Serialization;
 
 namespace cosh.Stock
 {
@@ -67,6 +70,22 @@ namespace cosh.Stock
             yield break;
         }
 
+        /// <summary>
+        /// Persists the history into a stream
+        /// </summary>
+        /// <param name="stock">The interesting stock</param>
+        /// <param name="myStream">The stream in which the result should be written to</param>
+        /// <param name="myFromDate">The date where the historic data should start</param>
+        /// <param name="myToDate">The date where the history data should end</param>
+        public static void PersistHistory(Stock stock, Stream myStream, DateTime myFromDate, DateTime myToDate)
+        {
+            var stockhistory = new StockHistory(stock, myFromDate, myToDate, GetHistoricQuotes(stock.Name, myFromDate, myToDate));
+            var gzip = new GZipStream(myStream, CompressionMode.Compress);
+
+            BinaryFormatter formatter = new BinaryFormatter();
+            formatter.Serialize(gzip, stockhistory);
+        }
+
         #endregion
 
         #region private helper
@@ -102,6 +121,5 @@ namespace cosh.Stock
         }
 
         #endregion
-
     }
 }

@@ -13,6 +13,7 @@ namespace cosh.Stock
     /// <summary>
     /// A stock quote
     /// </summary>
+    [Serializable]
     public sealed class StockQuote
     {
         #region data
