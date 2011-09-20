@@ -12,9 +12,22 @@ using System.IO;
 using cosh.Stock;
 using System.Threading;
 
-namespace HistoryCrawler
+namespace cosh.Stock
 {
-    class Program
+    /// <summary>
+    /// A crawler that is able to crawl yahoo finance for a number of stocks and serializes them into a filestream
+    /// 
+    /// The stocks are given by an argument: HistoryCrawler.exe "NYSE.csv"
+    /// 
+    /// This file has to look like this:
+    /// 
+    /// Symbol, Name
+    /// A,Agilent Technologies
+    /// AA,Alcoa Inc.
+    /// AAN,Aaron's Inc.
+    /// 
+    /// </summary>
+    class HistoryCrawler
     {
         static void Main(string[] args)
         {
@@ -23,12 +36,17 @@ namespace HistoryCrawler
                 string dataDirectory = CrawlerSettings.Default.DataDirectory;
                 bool overwrite = CrawlerSettings.Default.OverWrite;
 
-                if (overwrite)
+                if (Directory.Exists(dataDirectory))
                 {
-                    if (Directory.Exists(dataDirectory))
+                    if (overwrite)
                     {
                         Directory.Delete(dataDirectory, true);
+                        Directory.CreateDirectory(dataDirectory);
                     }
+                }
+                else
+                {
+                    Directory.CreateDirectory(dataDirectory);
                 }
 
                 FileStream symbolFile = File.OpenRead(args[0]);
@@ -47,22 +65,23 @@ namespace HistoryCrawler
                 {
                     counter++;
 
-
                     var stock = new Stock(line);
+
+                    string file = dataDirectory + Path.DirectorySeparatorChar + stock.Name;
 
                     Console.WriteLine(String.Format("{0}:\tName:{1}, Desc:{2}", counter, stock.Name, stock.Description));
 
-                    if (File.Exists(stock.Name))
+                    if (File.Exists(file))
                     {
                         if (overwrite)
                         {
-                            File.Delete(stock.Name);
-                            PersistStockAndHistory(stock);
+                            File.Delete(file);
+                            PersistStockAndHistory(stock, file);
                         }
                     }
                     else
                     {
-                        PersistStockAndHistory(stock);
+                        PersistStockAndHistory(stock, file);
                     }
 
                     Thread.Sleep(prng.Next(1000, 5000));
@@ -75,12 +94,16 @@ namespace HistoryCrawler
             }
         }
 
-        private static void PersistStockAndHistory(Stock stock)
+        private static void PersistStockAndHistory(Stock myStock, String myFileName)
         {
-            var stockHistoryFile = File.Create(stock.Name);
+            var stockHistoryFile = File.Create(myFileName);
             try
             {
-                StockQuotesSharp.PersistHistory(stock, stockHistoryFile, DateTime.MinValue, DateTime.Now);
+                StockQuotesSharp.SerializeHistory(myStock, stockHistoryFile, DateTime.MinValue, DateTime.Now);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(String.Format("Error while crawling history for stock {0} because of \"{1}\".", myStock.Name, e.Message));
             }
             finally
             {
