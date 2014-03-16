@@ -71,6 +71,56 @@ namespace cosh.Stock
             yield break;
         }
 
+		static String createCSV (StockQuote item)
+		{
+			StringBuilder sb = new StringBuilder ();
+
+			sb.Append (item.Date);
+			sb.Append (";");
+			sb.Append (item.Volume);
+			sb.Append (";");
+			sb.Append (item.Open);
+			sb.Append (";");
+			sb.Append (item.Close);
+			sb.Append (";");
+			sb.Append (item.AdjustedClosingPrices);
+			sb.Append (";");
+			sb.Append (item.Low);
+			sb.Append (";");
+			sb.Append (item.High);
+			sb.Append ("\n");
+			return sb.ToString();
+		}
+
+
+		static void writeToFile (Stream myStream, StockHistory stockhistory)
+		{
+			try
+			{
+
+				using ( StreamWriter sw = new StreamWriter ( myStream , System.Text.Encoding.Default ) )
+				{
+					sw.WriteLine(String.Format("Symbol: {0}", stockhistory.Stock.Name));
+					sw.WriteLine(String.Format("Description: {0}", stockhistory.Stock.Description));
+					sw.WriteLine(String.Format("StartDate: {0}", stockhistory.StartDate));
+					sw.WriteLine(String.Format("EndDate: {0}", stockhistory.EndDate));
+
+					sw.WriteLine("Date;Volume;Open;Close;AdjustedClosingPrices;Low;High");
+					foreach (var item in stockhistory.Quotes) {
+
+						sw.Write ( createCSV(item));
+					}
+
+				}
+			}
+			// Fehler
+			catch ( Exception ex )
+			{
+				System.Console.WriteLine ("ERROR: " + stockhistory.Stock);
+			}
+
+		}
+
         /// <summary>
         /// Serializes the history into a stream
         /// </summary>
@@ -81,10 +131,7 @@ namespace cosh.Stock
         public static void SerializeHistory(Stock stock, Stream myStream, DateTime myFromDate, DateTime myToDate)
         {
             var stockhistory = new StockHistory(stock, myFromDate, myToDate, GetHistoricQuotes(stock.Name, myFromDate, myToDate));
-            var gzip = new GZipStream(myStream, CompressionMode.Compress);
-
-            BinaryFormatter formatter = new BinaryFormatter();
-            formatter.Serialize(gzip, stockhistory);
+			writeToFile (myStream, stockhistory);
         }
 
         /// <summary>
@@ -128,6 +175,7 @@ namespace cosh.Stock
                         throw new ArgumentException("myStockSymbol", myStockSymbol + " is not a valid stock symbol");
 
                     default:
+						Console.WriteLine(String.Format("Error while crawling history for stock {0} because of \"{1}\".", myStockSymbol, e.Message));
                         throw e;
                 }
             }

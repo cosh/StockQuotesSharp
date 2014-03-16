@@ -34,7 +34,7 @@ namespace cosh.Stock
             if (args.Count() != 0)
             {
                 string dataDirectory = CrawlerSettings.Default.DataDirectory;
-                bool overwrite = CrawlerSettings.Default.OverWrite;
+				bool overwrite = false;
 
                 if (Directory.Exists(dataDirectory))
                 {
@@ -67,24 +67,11 @@ namespace cosh.Stock
 
                     var stock = new Stock(line);
 
-                    string file = dataDirectory + Path.DirectorySeparatorChar + stock.Name;
+					string file = dataDirectory + Path.DirectorySeparatorChar + Encode(stock.Name);
 
                     Console.WriteLine(String.Format("{0}:\tName:{1}, Desc:{2}", counter, stock.Name, stock.Description));
 
-                    if (File.Exists(file))
-                    {
-                        if (overwrite)
-                        {
-                            File.Delete(file);
-                            PersistStockAndHistory(stock, file);
-                        }
-                    }
-                    else
-                    {
-                        PersistStockAndHistory(stock, file);
-                    }
-
-                    Thread.Sleep(prng.Next(1000, 5000));
+					PersistStockAndHistory(stock, file);
 
                     line = reader.ReadLine();
                 }
@@ -93,6 +80,11 @@ namespace cosh.Stock
                 Console.ReadLine();
             }
         }
+
+		private static string Encode(string str)
+		{
+			return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(str));
+		}
 
         private static void PersistStockAndHistory(Stock myStock, String myFileName)
         {
@@ -104,11 +96,6 @@ namespace cosh.Stock
             catch (Exception e)
             {
                 Console.WriteLine(String.Format("Error while crawling history for stock {0} because of \"{1}\".", myStock.Name, e.Message));
-            }
-            finally
-            {
-                stockHistoryFile.Flush();
-                stockHistoryFile.Close();
             }
         }
     }

@@ -34,7 +34,7 @@ namespace cosh.Stock
 
         public Stock(string str)
         {
-            var splittedString = str.Split(',');
+			var splittedString = str.Split(';');
 
             Name = splittedString[0];
             Description = splittedString[1];
