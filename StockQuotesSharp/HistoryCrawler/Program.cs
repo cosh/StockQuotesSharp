@@ -71,7 +71,20 @@ namespace cosh.Stock
 
                     Console.WriteLine(String.Format("{0}:\tName:{1}, Desc:{2}", counter, stock.Name, stock.Description));
 
-					PersistStockAndHistory(stock, file);
+					if (File.Exists(file))
+					{
+						if (overwrite)
+						{
+							File.Delete(file);
+							PersistStockAndHistory(stock, file);
+							Thread.Sleep(prng.Next(1000, 5000));
+						}
+					}
+					else
+					{
+						PersistStockAndHistory(stock, file);
+						Thread.Sleep(prng.Next(1000, 5000));
+					}
 
                     line = reader.ReadLine();
                 }
